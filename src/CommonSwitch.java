@@ -6,8 +6,8 @@ public class CommonSwitch {
         return isTurnedOn;
     }
 
-    public static void setIsTurnedOn(boolean isTurnedOn) {
-        CommonSwitch.isTurnedOn = isTurnedOn;
+    public static void setIsTurnedOff() {
+        CommonSwitch.isTurnedOn = false;
     }
 
 }

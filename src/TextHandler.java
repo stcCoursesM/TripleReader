@@ -26,7 +26,8 @@ public class TextHandler implements Runnable {
                  FileWriter fw = new FileWriter(whereToWrite, true);
             ) {
 
-                while (currentIsOn) {
+                while (commonSwitch.isTurnedOn() && currentIsOn) {
+                    if (sc.hasNextInt()) commonSwitch.setIsTurnedOff();
                     if (!sc.hasNext()) {
                         currentIsOn = false;
                         return;
