@@ -1,6 +1,6 @@
 public class CommonSwitch {
 
-    static boolean isTurnedOn;
+    static boolean isTurnedOn = true;
 
     public static boolean isTurnedOn() {
         return isTurnedOn;
