@@ -7,11 +7,11 @@ public class Main {
         CommonSwitch commonSwitch = new CommonSwitch();
 
 
-        new Thread(new TextHandler(new File("./src/res/abc.txt"),
+        new Thread(new TextHandler(new File("./src/resources/abc.txt"),
                 new File("./src/output/common.txt"), commonSwitch)).start();
-        new Thread(new TextHandler(new File("./src/res/bca.txt"),
+        new Thread(new TextHandler(new File("./src/resources/bca.txt"),
                 new File("./src/output/common.txt"), commonSwitch)).start();
-        new Thread(new TextHandler(new File("./src/res/cab.txt"),
+        new Thread(new TextHandler(new File("./src/resources/cab.txt"),
                 new File("./src/output/common.txt"), commonSwitch)).start();
 
     }
