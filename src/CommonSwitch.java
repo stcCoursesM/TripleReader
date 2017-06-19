@@ -1,13 +1,34 @@
+import java.util.HashSet;
+import java.util.Set;
+
 public class CommonSwitch {
 
-    static boolean isTurnedOn = true;
+    static boolean switcher;
 
-    public static boolean isTurnedOn() {
-        return isTurnedOn;
+    public boolean isTurnedOn() {
+        return switcher;
     }
 
-    public static void setIsTurnedOff() {
-        CommonSwitch.isTurnedOn = false;
+    public void setIsTurnedOff() {
+        CommonSwitch.switcher = false;
     }
+
+    public boolean addToSet(String s){
+        if(strSet.contains(s)) return false;
+
+        strSet.add(s);
+        return true;
+
+    }
+
+    volatile Set strSet;
+
+    CommonSwitch(){
+
+        strSet = new HashSet<String>();
+        switcher = true;
+
+    }
+
 
 }
