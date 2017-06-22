@@ -1,0 +1,153 @@
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'Main'
+
+version = '1.0'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+
+def File getVersionPropertiesFile(moduleName) {
+    def versionPropsFile = file(moduleName + '/version.properties')
+
+    println("getVersionCode: loading '" + versionPropsFile + "'")
+
+    if (!versionPropsFile.exists()) {
+        versionPropsFile.createNewFile()
+    }
+
+    return versionPropsFile
+}
+
+def Properties readVersionProperties(moduleName) {
+    def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(getVersionPropertiesFile(moduleName)))
+
+    if (!versionProps['VERSION_CODE']) {
+        versionProps['VERSION_CODE'] = "1"
+    }
+
+    return versionProps
+}
+
+def int getVersionCode(moduleName) {
+    def Properties versionProps = readVersionProperties(moduleName)
+
+    return Integer.parseInt(versionProps['VERSION_CODE'].toString()).intValue()
+}
+
+def int updateVersionCode(moduleName) {
+    def Properties versionProps = readVersionProperties(moduleName)
+    def versionCode = getVersionCode(moduleName) + 1;
+
+    versionProps['VERSION_CODE'] = versionCode.toString()
+    versionProps.store(getVersionPropertiesFile(moduleName).newWriter(), null)
+
+    println("updateVersionCode: " + versionCode)
+
+    return versionCode
+}
+
+
+def versionPropsFile = file('build.num')
+
+if (versionPropsFile.canRead()) {
+    def Properties versionProps = new Properties()
+
+    versionProps.load(new FileInputStream(versionPropsFile))
+
+    def code = versionProps['VERSION_CODE'].toInteger() + 1
+    def changedFiles = getChangedFiles().toString()
+
+    versionProps['VERSION_CODE'] = code.toString()
+    versionProps['Changed_files'] = changedFiles.toString()
+    versionProps.store(versionPropsFile.newWriter(), null)
+
+} else {
+    throw new GradleException("Could not read version.properties! Is the build.num file in the root folder?")
+}
+
+def getChangedFiles() {
+    // Get the target and source branch
+    def ghprbTargetBranch = System.getenv("ghprbTargetBranch")
+    def ghprbSourceBranch = System.getenv("ghprbSourceBranch")
+
+    // Compare to master if no branch specified
+    def targetBranch = ghprbTargetBranch ? "origin/${ghprbTargetBranch}" : "master"
+    def sourceBranch = ghprbSourceBranch ? "origin/${ghprbSourceBranch}" : ""
+
+    // Get list of all changed files including status
+    def systemOutStream = new ByteArrayOutputStream()
+    def command = "git diff --name-status --diff-filter=dr $targetBranch $sourceBranch"
+    command.execute().waitForProcessOutput(systemOutStream, System.err)
+    def allFiles = systemOutStream.toString().trim().split('\n')
+    systemOutStream.close()
+
+    // Remove the status prefix
+    Pattern statusPattern = Pattern.compile("(\\w)\\t+(.+)")
+    List<String> files = new ArrayList<>()
+    for (file in allFiles) {
+        Matcher matcher = statusPattern.matcher(file)
+        if (matcher.find()) {
+            files.add(matcher.group(2))
+        }
+    }
+
+    // Return the list of touched files
+    files
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        manifest.attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': version,
+                'Main-Class': 'com.Main',
+                'Changed-Files': getChangedFiles()
+    }
+
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+//Get dependencies from Maven central repository
+repositories {
+    mavenCentral()
+}
+
+//Project dependencies
+dependencies {
+    compile 'ch.qos.logback:logback-classic:1.1.2'
+}
+
+
+task hello {
+    doLast {
+        println 'tutorialspoint'
+    }
+}
+
+task groovyJDK << {
+    String myName = "Murad";
+    myName.each() {
+        println "${it}"
+    };
+}
+
+subprojects {
+    apply plugin: 'java'
+    tasks.withType(Jar) {
+        destinationDir = file("$rootDir/build/New_libs")
+    }
+}
+
+// tag::wrapper[]
+// end::wrapper[]
+
+
